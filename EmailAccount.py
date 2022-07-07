@@ -4,3 +4,6 @@ class EmailAccount:
         self.username = username
         self.address = f'{username}{domain}'
         self.password = password
+
+    def __str__(self) -> str:
+        return f'{self.name}, {self.username}, {self.address}'

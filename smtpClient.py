@@ -8,7 +8,7 @@ DOMAIN = '@arpa.net'
 CONNECTION_DETAILS = (HOST_ADDRESS, PORT)
 
 
-def print_menu():
+def print_main_menu():
     print('Bem-vindo ao Cliente de E-mail ARPA.net')
     print('O que deseja fazer?')
     print('(Digite o número correspondente a opção do menu)')
@@ -21,16 +21,28 @@ with socket_package.socket(
     socket_package.SOCK_STREAM
 ) as smtp_client:
     smtp_client.connect(CONNECTION_DETAILS)
-    print_menu()
+    print_main_menu()
 
     selected_option = int(input('Opção: '))
     if selected_option == 1:
-        smtp_client.send(b'1')
         name = input('Nome: ')
         username = input('Nome de usuário: ')
         password = input('Senha: ')
-        smtp_client.send(name.encode('utf-8'))
-        smtp_client.send(username.encode('utf-8'))
-        smtp_client.send(password.encode('utf-8'))
+        formatted_content = f'{name};{username};{password}'
+        encoded_message = formatted_content.encode('utf-8')
+        smtp_client.send(b'1')
+        smtp_client.send(encoded_message)
+
+        print('Deseja fazer mais alguma coisa?')
+        print('1) Entrar')
+        print('2) Sair')
+        next_step = int(input('Opção: '))
+
+        if next_step == 1:
+            smtp_client.send(b'2')
+            smtp_client.close()
+        elif next_step == 2:
+            smtp_client.close()
     elif selected_option == 2:
         smtp_client.send(b'2')
+        smtp_client.close()

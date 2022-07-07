@@ -2,19 +2,19 @@ import socket as socket_package
 from threading import Thread
 
 from EmailAccount import EmailAccount
-from MailBox import BoxAccount
+from MailBox import MailBox
 
 HOST_ADDRESS = '127.0.0.1'
 PORT = 5000
-MAX_PACKET_SIZE = 1024
+MAX_BUFFER_SIZE = 1024
 DOMAIN = '@arpa.net'
 
 CONNECTION_DETAILS = (HOST_ADDRESS, PORT)
 
-CREATE_ACCOUNT_COMMAND = b'1'
-LOGIN_COMMAND = b'2'
+CREATE_ACCOUNT_COMMAND = '1'
+LOGIN_COMMAND = '2'
 
-registered_accounts: [BoxAccount] = []
+registered_accounts: [EmailAccount] = []
 alive_threads = []
 
 # def create_new_thread(connection, address):
@@ -46,13 +46,31 @@ with socket_package.socket(
     smtp_server.bind(CONNECTION_DETAILS)
     smtp_server.listen()
     while True:
-        connection, address = smtp_server.accept()
+        (connection, address) = smtp_server.accept()
         with connection:
             print(f'Connection details: {connection}')
             print(f'Connection address: {address}')
 
-            received_data = connection.recv(MAX_PACKET_SIZE)
-            while received_data:
-                print(received_data.decode('utf-8'))
+            received_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
+            while received_command == CREATE_ACCOUNT_COMMAND:
+                received_data = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
+                new_account_data = received_data.split(';')
+                registered_accounts.append(
+                    EmailAccount(
+                        new_account_data[0],
+                        new_account_data[1],
+                        DOMAIN,
+                        new_account_data[2]
+                    )
+                )
+                print(registered_accounts[-1].__str__())
+                new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
+
+                received_command = new_command
+                break
+
+            while received_command == LOGIN_COMMAND:
+                print('AAAAAAAAAAAAAAAUGH')
+                break
 
 
