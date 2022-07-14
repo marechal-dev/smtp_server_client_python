@@ -4,6 +4,8 @@ from threading import Thread
 from EmailAccount import EmailAccount
 from MailBox import MailBox
 
+from MessagesDictionaries import TO_SEND_SERVER_SIDE_MESSAGES, RECEIVED_SERVER_SIDE_MESSAGES
+
 HOST_ADDRESS = '127.0.0.1'
 PORT = 5000
 MAX_BUFFER_SIZE = 1024
@@ -11,33 +13,8 @@ DOMAIN = '@arpa.net'
 
 CONNECTION_DETAILS = (HOST_ADDRESS, PORT)
 
-CREATE_ACCOUNT_COMMAND = '1'
-LOGIN_COMMAND = '2'
-
-registered_accounts: [EmailAccount] = []
+registered_accounts: [MailBox] = []
 alive_threads = []
-
-# def create_new_thread(connection, address):
-#     new_thread = Thread(target=handle_connection, args=(connection, address))
-#
-#     if len(alive_threads) > 0:
-#         alive_threads.append(new_thread.ident)
-#
-#     new_thread.start()
-
-# def handle_connection():
-#     print(f'Connection details: {connection}')
-#     print(f'Connection address: {address}')
-#
-#     CLIENT_WANT_TO_CLOSE = b'0'
-#     while True:
-#         received_data = connection.recv(MAX_PACKET_SIZE)
-#         if received_data == CREATE_ACCOUNT_COMMAND:
-#             print('Criar conta')
-#             break
-#         elif received_data == LOGIN_COMMAND:
-#             print('Logar')
-#             break
 
 with socket_package.socket(
     socket_package.AF_INET,
@@ -52,25 +29,50 @@ with socket_package.socket(
             print(f'Connection address: {address}')
 
             received_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
-            while received_command == CREATE_ACCOUNT_COMMAND:
+            while received_command == RECEIVED_SERVER_SIDE_MESSAGES.get('user_wants_to_create_new_account'):
                 received_data = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
                 new_account_data = received_data.split(';')
-                registered_accounts.append(
-                    EmailAccount(
-                        new_account_data[0],
-                        new_account_data[1],
-                        DOMAIN,
-                        new_account_data[2]
-                    )
+                new_account = EmailAccount(
+                    new_account_data[0],
+                    new_account_data[1],
+                    DOMAIN,
+                    new_account_data[2]
                 )
+                new_mailbox = MailBox(new_account)
+                registered_accounts.append(new_mailbox)
+
                 print(registered_accounts[-1].__str__())
                 new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
 
                 received_command = new_command
                 break
 
-            while received_command == LOGIN_COMMAND:
-                print('AAAAAAAAAAAAAAAUGH')
+            while received_command == RECEIVED_SERVER_SIDE_MESSAGES.get('user_wants_to_login'):
+                received_client_credentials = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
+                user_credentials = received_client_credentials.split(';')
+
+                if len(registered_accounts) > 0:
+                    for account in registered_accounts:
+                        if account.userData.username == user_credentials[0]:
+                            if account.userData.password == user_credentials[1]:
+                                connection.send(TO_SEND_SERVER_SIDE_MESSAGES.get('found_account').encode('utf-8'))
+
+                                if len(account.mailBox) > 0:
+                                    connection.send(f'{len(account.mailBox)}'.encode('utf-8'))
+
+                                    for email in account.mailBox:
+                                        formatted_email = f'{email.sender};{email.receiver};{email.timestamp};{email.content}'
+                                        encoded_email_message = formatted_email.encode('utf-8')
+                                        connection.send(encoded_email_message)
+
+                                break
+                            else:
+                                connection.send(TO_SEND_SERVER_SIDE_MESSAGES.get('password_incorrect').encode('utf-8'))
+                                break
+                    else:
+                        connection.send(b'NOACC')
+                else:
+                    connection.send(b'NOACCS')
                 break
 
 
