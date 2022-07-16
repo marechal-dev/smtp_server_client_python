@@ -39,21 +39,22 @@ with socket_package.socket(
 
             received_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
             while received_command == MESSAGES_DICTIONARY.get('user_wants_to_create_new_account'):
-                received_data = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
-                new_account_data = received_data.split(';')
+                received_data = connection.recv(MAX_BUFFER_SIZE).decode('utf-8').split(';')
                 new_account = EmailAccount(
-                    new_account_data[0],
-                    new_account_data[1],
+                    received_data[0],
+                    received_data[1],
                     DOMAIN,
-                    new_account_data[2]
+                    received_data[2]
                 )
+
                 new_mailbox = MailBox(new_account)
                 registered_accounts.append(new_mailbox)
 
                 print(registered_accounts[-1].__str__())
-                new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
 
+                new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
                 received_command = new_command
+
                 break
 
             while received_command == MESSAGES_DICTIONARY.get('user_wants_to_login'):
@@ -99,6 +100,8 @@ with socket_package.socket(
                 new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
                 received_command = new_command
 
+                break
+
             while received_command == MESSAGES_DICTIONARY.get('user_wants_to_send_email'):
                 sender_address = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
                 receiver_address = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
@@ -118,6 +121,11 @@ with socket_package.socket(
                             account.mailBox.append(new_email)
                 else:
                     connection.send(MESSAGES_DICTIONARY.get('receiver_not_found').encode('utf-8'))
+
+                new_command = connection.recv(MAX_BUFFER_SIZE).decode('utf-8')
+                received_command = new_command
+
+                break
 
 
 
