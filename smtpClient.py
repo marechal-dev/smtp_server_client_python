@@ -1,6 +1,6 @@
 import socket as socket_package
 
-from MessagesDictionaries import TO_SEND_CLIENT_SIDE_MESSAGES, RECEIVED_CLIENT_SIDE_MESSAGES
+from MessagesDictionary import TO_SEND_CLIENT_SIDE_MESSAGES, RECEIVED_CLIENT_SIDE_MESSAGES
 
 from utils import print_main_menu, print_mail_box_menu
 
