@@ -1,4 +1,5 @@
 import socket as socket_package
+import sqlite3
 from threading import Thread
 
 from Email import Email
@@ -108,6 +109,7 @@ with socket_package.socket(
                                 # Enviamos a quantidade de emails
                                 connection.send(f'{len(account_data.mailBox)}'.encode('utf-8'))
 
+
                                 # E para cada email
                                 for email in account_data.mailBox:
                                     # Formatamos os detalhes (remetente, destinatário e hora de envio)
@@ -172,8 +174,4 @@ with socket_package.socket(
                 received_command = new_command
 
                 break
-
-
-
-
 
