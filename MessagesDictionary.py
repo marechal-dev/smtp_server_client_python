@@ -1,13 +1,16 @@
 MESSAGES_DICTIONARY = {
     'found_account': 'ACC',
+    'correct_password': 'CORRECTPASS',
     'account_not_found': 'NOACC',
     'incorrect_password': 'INCORRECTPASS',
     'no_registered_accounts': 'NOACCS',
     'empty_box': 'EMPTYBOX',
     'receiver_not_found': 'NORCV',
+    'receiver_found': 'RCV',
     'user_wants_to_create_new_account': '1',
     'user_wants_to_login': '2',
-    'user_wants_to_send_email': '3'
+    'user_wants_to_send_email': '3',
+    'user_wants_to_read_email': '4'
 }
 
 # def create_new_thread(connection, address):

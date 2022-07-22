@@ -1,5 +1,5 @@
-from EmailAccount import EmailAccount
-from Email import Email
+from classes.EmailAccount import EmailAccount
+from classes.Email import Email
 
 
 class MailBox:
